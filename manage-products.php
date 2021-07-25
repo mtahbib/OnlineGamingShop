@@ -7,10 +7,14 @@ if(strlen($_SESSION['alogin'])==0)
 header('location:index.php');
 }
 else{
-
 date_default_timezone_set('Asia/Dhaka');
 $currentTime = date( 'd-m-Y h:i:s A', time () );
 
+if(isset($_GET['del']))
+		  {
+		          mysqli_query($con,"delete from products where id = '".$_GET['id']."'");
+                  $_SESSION['delmsg']="Product deleted !!";
+		  }
 
 ?>
 <!DOCTYPE html>
@@ -18,25 +22,13 @@ $currentTime = date( 'd-m-Y h:i:s A', time () );
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Admin | Pending Orders</title>
+	<title>Admin | Manage Products</title>
 	<link rel="shortcut icon" type="image/png" href="images/logo-mini.png">
 	<link type="text/css" href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 	<link type="text/css" href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
 	<link type="text/css" href="css/theme.css" rel="stylesheet">
 	<link type="text/css" href="images/icons/css/font-awesome.css" rel="stylesheet">
 	<link type="text/css" href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600' rel='stylesheet'>
-	<script language="javascript" type="text/javascript">
-var popUpWin=0;
-function popUpWindow(URLStr, left, top, width, height)
-{
- if(popUpWin)
-{
-if(!popUpWin.closed) popUpWin.close();
-}
-popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=yes,width='+600+',height='+600+',left='+left+', top='+top+',screenX='+left+',screenY='+top+'');
-}
-
-</script>
 </head>
 <body>
 <?php include('include/header.php');?>
@@ -50,7 +42,7 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
 
 	<div class="module">
 							<div class="module-head">
-								<h3>Pending Orders</h3>
+								<h3>Manage Products</h3>
 							</div>
 							<div class="module-body table">
 	<?php if(isset($_GET['del']))
@@ -64,46 +56,38 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
 									<br />
 
 							
-								<table cellpadding="0" cellspacing="0" border="0" class="datatable-1 table table-bordered table-striped	 display table-responsive" >
+								<table cellpadding="0" cellspacing="0" border="0" class="datatable-1 table table-bordered table-striped	 display" width="100%">
 									<thead>
 										<tr>
 											<th>#</th>
-											<th> Name</th>
-											<th width="50">Email /Contact no</th>
-											<th>Shipping Address</th>
-											<th>Product </th>
-											<th>Qty </th>
-											<th>Amount </th>
-											<th>Order Date</th>
+											<th>Product Name</th>
+											<th>Category </th>
+											<th>Subcategory</th>
+											<th>Company Name</th>
+											<th>Product Creation Date</th>
 											<th>Action</th>
-											
-										
 										</tr>
 									</thead>
-								
-<tbody>
-<?php 
-$status='Delivered';
-$query=mysqli_query($con,"select users.name as username,users.email as useremail,users.contactno as usercontact,users.shippingAddress as shippingaddress,users.shippingCity as shippingcity,users.shippingState as shippingstate,users.shippingPincode as shippingpincode,products.productName as productname,products.shippingCharge as shippingcharge,orders.quantity as quantity,orders.orderDate as orderdate,products.productPrice as productprice,orders.id as id  from orders join users on  orders.userId=users.id join products on products.id=orders.productId where orders.	orderStatus!='$status' or orders.orderStatus is null");
+									<tbody>
+
+<?php $query=mysqli_query($con,"select products.*,category.categoryName,subcategory.subcategory from products join category on category.id=products.category join subcategory on subcategory.id=products.subCategory");
 $cnt=1;
 while($row=mysqli_fetch_array($query))
 {
-?>										
+?>									
 										<tr>
 											<td><?php echo htmlentities($cnt);?></td>
-											<td><?php echo htmlentities($row['username']);?></td>
-<td><?php echo htmlentities($row['useremail']);?>/<?php echo htmlentities($row['usercontact']);?></td>
-<td><?php echo htmlentities($row['shippingaddress'].",".$row['shippingcity'].",".$row['shippingstate']."-".$row['shippingpincode']);?></td>
-											<td><?php echo htmlentities($row['productname']);?></td>
-											<td><?php echo htmlentities($row['quantity']);?></td>
-											<td><?php echo htmlentities($row['quantity']*$row['productprice']+$row['shippingcharge']);?></td>
-											<td><?php echo htmlentities($row['orderdate']);?></td>
-											<td>   <a href="updateorder.php?oid=<?php echo htmlentities($row['id']);?>" title="Update order" target="_blank"><i class="icon-edit"></i></a>
-											</td>
-											</tr>
-
+											<td><?php echo htmlentities($row['productName']);?></td>
+											<td><?php echo htmlentities($row['categoryName']);?></td>
+											<td> <?php echo htmlentities($row['subcategory']);?></td>
+											<td><?php echo htmlentities($row['productCompany']);?></td>
+											<td><?php echo htmlentities($row['postingDate']);?></td>
+											<td>
+											<a href="edit-products.php?id=<?php echo $row['id']?>" ><i class="icon-edit"></i></a>
+											<a href="manage-products.php?id=<?php echo $row['id']?>&del=delete" onClick="return confirm('Are you sure you want to delete?')"><i class="icon-remove-sign"></i></a></td>
+										</tr>
 										<?php $cnt=$cnt+1; } ?>
-										</tbody>
+										
 								</table>
 							</div>
 						</div>						
